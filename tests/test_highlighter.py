@@ -51,6 +51,13 @@ def test_colorize_level_no_known_level():
     assert result == line
 
 
+def test_colorize_level_preserves_original_text():
+    """Colorizing a level should not alter the visible text content."""
+    line = "2024-01-01 12:00:00 ERROR something went wrong"
+    result = colorize_level(line)
+    assert strip_ansi(result) == line
+
+
 def test_highlight_pattern_none():
     line = "some log line with keyword"
     result = highlight_pattern(line, None)
@@ -72,6 +79,14 @@ def test_highlight_pattern_multiple_matches():
     line = "foo bar foo baz foo"
     result = highlight_pattern(line, pattern)
     assert result.count(MAGENTA) == 3
+
+
+def test_highlight_pattern_no_match():
+    """highlight_pattern should return the original line unchanged when there is no match."""
+    pattern = re.compile(r"notpresent")
+    line = "some log line without the term"
+    result = highlight_pattern(line, pattern)
+    assert result == line
 
 
 def test_highlight_line_combines_both():
