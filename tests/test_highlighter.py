@@ -103,6 +103,14 @@ def test_highlight_line_no_colorize_levels():
     assert RED not in result
 
 
+def test_highlight_line_preserves_visible_text():
+    """highlight_line should not alter the visible text content regardless of options."""
+    pattern = re.compile(r"timeout")
+    line = "2024-01-01 ERROR connection timeout occurred"
+    result = highlight_line(line, pattern=pattern, colorize_levels=True)
+    assert strip_ansi(result) == line
+
+
 def test_strip_ansi_removes_codes():
     colored = f"{RED}hello{RESET} {BOLD}world{RESET}"
     plain = strip_ansi(colored)
@@ -110,5 +118,7 @@ def test_strip_ansi_removes_codes():
 
 
 def test_strip_ansi_plain_string():
-    plain = "no colors here"
-    assert strip_ansi(plain) == plain
+    """strip_ansi should return a plain string unchanged."""
+    plain = "no ansi codes here"
+    result = strip_ansi(plain)
+    assert result == plain
