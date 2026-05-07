@@ -29,10 +29,18 @@ class LogStats:
     def warning_count(self) -> int:
         return self.level_counts.get("WARNING", 0) + self.level_counts.get("WARN", 0)
 
+    @property
+    def match_rate(self) -> Optional[float]:
+        """Return the fraction of total lines that were matched, or None if total is zero."""
+        if self.total_lines == 0:
+            return None
+        return self.matched_lines / self.total_lines
+
     def as_dict(self) -> dict:
         return {
             "total_lines": self.total_lines,
             "matched_lines": self.matched_lines,
+            "match_rate": self.match_rate,
             "level_counts": dict(self.level_counts),
             "error_count": self.error_count,
             "warning_count": self.warning_count,
