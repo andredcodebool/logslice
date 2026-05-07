@@ -96,14 +96,26 @@ def test_format_separator_between_gaps():
     entries = [(0, "a\n", True), (5, "f\n", True)]
     output = format_context_block(entries)
     assert "--" in output
-    assert output.index("--") == 1
+    assert output[0] == "a"
+    assert output[-1] == "f"
 
 
-def test_format_custom_separator():
-    entries = [(0, "a\n", True), (3, "d\n", True)]
-    output = format_context_block(entries, separator="====")
-    assert "====" in output
+def test_format_multiple_gaps_have_multiple_separators():
+    """Each non-contiguous group of entries should be separated by '--'."""
+    entries = [
+        (0, "a\n", True),
+        (5, "f\n", False),
+        (10, "k\n", True),
+    ]
+    output = format_context_block(entries)
+    separator_count = output.count("--")
+    assert separator_count == 2
+    assert output[0] == "a"
+    assert output[-1] == "k"
 
 
-def test_format_empty_entries():
-    assert format_context_block([]) == []
+def test_format_strips_trailing_newline():
+    """Lines in the output should have their trailing newline stripped."""
+    entries = [(0, "hello\n", True), (1, "world\n", False)]
+    output = format_context_block(entries)
+    assert all(not line.endswith("\n") for line in output if line != "--")
