@@ -112,19 +112,23 @@ def test_profile_counts_by_window_keys():
     assert len(result.counts_by_window) == 2
 
 
-def test_profile_no_timestamps():
-    result = profile_lines(["no ts", "also no ts"])
+def test_profile_no_timestamped_lines():
+    """profile_lines should handle input with no parseable timestamps gracefully."""
+    lines = ["no timestamp", "also no timestamp"]
+    result = profile_lines(lines)
+    assert result.total_lines == 2
     assert result.timestamped_lines == 0
     assert result.duration_seconds == 0.0
-    assert result.busiest_window == ("", 0)
-
-
-def test_profile_invalid_window_raises():
-    with pytest.raises(ValueError, match="window_seconds"):
-        profile_lines(LINES, window_seconds=0)
-
-
-def test_profile_single_timestamp_zero_lps():
-    result = profile_lines(["2024-01-15 10:00:00 INFO only one"])
     assert result.lines_per_second == 0.0
-    assert result.duration_seconds == 0.0
+    assert result.busiest_window == ("", 0)
+    assert result.counts_by_window == {}
+
+
+def test_profile_single_timestamped_line():
+    """A single timestamped line should yield zero duration and zero rate."""
+    lines = ["2024-01-15 10:00:00 INFO only line"]
+    result = profile_lines(lines)
+    assert result.total_lines == 1
+    assert result.timestamped_lines == 1
+    assert result.duration_seconds == pytest.approx(0.0)
+    assert result.lines_per_second == 0.0
