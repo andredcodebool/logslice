@@ -4,28 +4,30 @@ Fast log file slicer with time-range and regex filtering for local debugging.
 
 ## Features
 
-- **slice** — Extract lines within a time range
-- **filter** — Regex-based line filtering
-- **highlight** — Colorize log levels and patterns
-- **export** — Save results as TXT, JSONL, or CSV
-- **stats / report** — Summarize log level distributions
-- **watch** — Tail a log file in real time
-- **bookmark** — Save and restore positions in a log file
-- **context** — Show lines surrounding a match
-- **dedup** — Remove duplicate log lines
-- **sample** — Randomly or periodically sample lines
-- **diff** — Compare two log files
-- **merge** — Merge multiple log files in chronological order
-- **truncate** — Keep only the head, tail, or middle of a log
-- **split** — Split a log by line count, size, or time window
-- **redact** — Mask sensitive data (emails, IPs, UUIDs, custom patterns)
-- **annotate** — Attach notes to matching lines
-- **normalize** — Standardize timestamps, levels, and custom fields
-- **summarize** — High-level summary of a log file
-- **classify** — Determine the dominant log level of a file
-- **profile** — Count events per time window
-- **score** — Rank lines by severity and keyword weight
-- **tag** — Label lines with user-defined regex-based tags
+- **slice** – Extract lines within a time range
+- **filter** – Regex include/exclude filtering
+- **highlight** – Colorise log levels and patterns
+- **export** – Write results to `.txt`, `.jsonl`, or `.csv`
+- **stats / report** – Counts, rates, and level breakdowns
+- **watch** – Tail a live log file with optional filters
+- **bookmark** – Save and restore file positions
+- **context** – Show lines before/after a match (`-B`/`-A`)
+- **dedup** – Remove duplicate log lines
+- **sample** – Keep every-N, random, or head subset of lines
+- **diff** – Compare two log files line-by-line
+- **merge** – Interleave multiple log files in timestamp order
+- **truncate** – Keep first/last/middle N lines
+- **split** – Divide a log into chunks by lines, size, or time
+- **redact** – Mask sensitive data (emails, IPs, UUIDs, …)
+- **annotate** – Tag lines with custom labels
+- **normalize** – Standardise timestamps and levels
+- **summarize** – One-line digest of a log file
+- **classify** – Dominant log-level classification
+- **profile** – Line-rate histogram over time windows
+- **score** – Assign severity scores to lines
+- **tag** – Attach user-defined tags to matching lines
+- **pipeline** – Chain grep / drop / replace stages
+- **group** – Bucket lines by capture pattern or time window
 
 ## Installation
 
@@ -33,48 +35,52 @@ Fast log file slicer with time-range and regex filtering for local debugging.
 pip install logslice
 ```
 
-## Quick Start
+## Quick start
 
 ```bash
 # Slice by time range
 logslice slice app.log --start "2024-01-01 08:00" --end "2024-01-01 09:00"
 
 # Filter with regex
-logslice slice app.log --filter "ERROR|WARN"
+logslice slice app.log --filter ERROR
 
-# Tag lines with labels
-logslice tag app.log -r ERR=error -r WRN=warn --summary
+# Group by log level
+logslice group app.log --pattern "(ERROR|WARN|INFO|DEBUG)"
 
-# Tag and show only matching lines
-logslice tag app.log -r CRITICAL=critical --tagged-only
+# Group by 5-minute time windows
+logslice group app.log --window 300
 
 # Export to CSV
-logslice slice app.log --export out.csv
+logslice slice app.log --filter ERROR --export out.csv
 
-# Watch live
-logslice watch app.log
+# Watch live with filter
+logslice watch app.log --filter CRITICAL
 
 # Deduplicate
 logslice dedup app.log
 
-# Score by severity
-logslice score app.log --threshold 5
+# Show stats report
+logslice stats app.log
 ```
 
-## Tag Rules
+## group sub-command
 
-Rules follow the `LABEL=PATTERN` format where `PATTERN` is a Python regex.
-Multiple rules can be applied; a line may receive more than one tag.
+```
+usage: logslice group [-h] (--pattern REGEX | --window SECONDS)
+                      [--show-ungrouped] file
+
+positional arguments:
+  file               Log file to process
+
+options:
+  --pattern REGEX    Regex with one capture group used as the bucket key
+  --window SECONDS   Group by fixed time window (seconds)
+  --show-ungrouped   Also print lines that could not be grouped
+```
+
+## Development
 
 ```bash
-logslice tag app.log \
-  -r ERROR=error \
-  -r SLOW='took [0-9]+ms' \
-  -r AUTH='(login|logout|auth)' \
-  --tagged-only \
-  --summary
+pip install -e .[dev]
+pytest
 ```
-
-## License
-
-MIT
